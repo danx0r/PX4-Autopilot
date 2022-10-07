@@ -1,0 +1,2 @@
+export PX4_NO_FOLLOW_MODE=1
+
