@@ -67,7 +67,9 @@ fi
 # be running from last time
 pkill -x gazebo || true
 
+echo "DANBUG MODEL:" "export PX4_SIM_MODEL=${model}"
 export PX4_SIM_MODEL=${model}
+echo "DANBUG WORLD:" "export PX4_SIM_WORLD=${world}"
 export PX4_SIM_WORLD=${world}
 
 SIM_PID=0
@@ -81,6 +83,7 @@ if [ -x "$(command -v gazebo)" ]; then
 	fi
 
 	# Set the plugin path so Gazebo finds our model and sim
+	echo "DANBUG plugin path:" source "$src_path/Tools/simulation/gazebo/setup_gazebo.bash" "${src_path}" "${build_path}"
 	source "$src_path/Tools/simulation/gazebo/setup_gazebo.bash" "${src_path}" "${build_path}"
 	if [ -z $PX4_SITL_WORLD ]; then
 		#Spawn predefined world
@@ -105,6 +108,7 @@ if [ -x "$(command -v gazebo)" ]; then
 			world_path="$PX4_SITL_WORLD"
 		fi
 	fi
+	echo "DANBUG gzserver:" $verbose $world_path $ros_args	
 	gzserver $verbose $world_path $ros_args &
 	SIM_PID=$!
 
@@ -131,6 +135,7 @@ if [ -x "$(command -v gazebo)" ]; then
 		echo "Using: ${modelpath}/${model}/${model}.sdf"
 	fi
 
+	echo "DANBUG gz model" --verbose --spawn-file="${modelpath}/${model}/${model_name}.sdf" --model-name=${model} -x 1.01 -y 0.98 -z 0.83
 	while gz model --verbose --spawn-file="${modelpath}/${model}/${model_name}.sdf" --model-name=${model} -x 1.01 -y 0.98 -z 0.83 2>&1 | grep -q "An instance of Gazebo is not running."; do
 		echo "gzserver not ready yet, trying again!"
 		sleep 1
@@ -142,6 +147,7 @@ if [ -x "$(command -v gazebo)" ]; then
 		# gzserver needs to be running to avoid a race. Since the launch
 		# is putting it into the background we need to avoid it by backing off
 		sleep 3
+		echo "DANBUG" gzclient --verbose $follow_mode
 		nice -n 20 gzclient --verbose $follow_mode &
 		GUI_PID=$!
 	fi
@@ -157,7 +163,7 @@ set +e
 
 sitl_command="\"$sitl_bin\" $no_pxh \"$build_path\"/etc"
 
-echo SITL COMMAND: $sitl_command
+echo DANBUG SITL COMMAND: $sitl_command
 
 if [ "$debugger" == "lldb" ]; then
 	eval lldb -- $sitl_command
